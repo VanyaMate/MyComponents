@@ -1,12 +1,14 @@
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using VM.Managers;
+using VM.Managers.Save;
 using VM.Save;
 
 namespace VM.TerrainTools
 {
-    public class TerrainManager : MonoBehaviour
+    public class TerrainManager : ObjectToSave
     {
         public static TerrainManager Instance;
 
@@ -65,37 +67,6 @@ namespace VM.TerrainTools
                 {
                     this.GetGroundInfoAboutArea(Utils.MouseWorldPosition.point, 1f);
                 }*/
-            }
-        }
-
-        public TerrainSaveData GetTerrainSaveData ()
-        {
-            TerrainSaveData saveData = new TerrainSaveData();
-            saveData.details = new Dictionary<int, int[,]>();
-
-            TerrainData terrainData = this._terrain.terrainData;
-
-            saveData.heights = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
-            saveData.colors = terrainData.GetAlphamaps(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
-
-            for (int i = 0; i < terrainData.terrainLayers.Length; i++)
-            {
-                saveData.details.Add(i, terrainData.GetDetailLayer(0, 0, terrainData.detailWidth, terrainData.detailHeight, i));
-            }
-
-            return saveData;
-        }
-
-        public void LoadTerrainSaveData (TerrainSaveData terrainData)
-        {
-            TerrainData terrain = this._terrain.terrainData;
-
-            terrain.SetHeights(0, 0, terrainData.heights);
-            terrain.SetAlphamaps(0, 0, terrainData.colors);
-
-            for (int i = 0; i < terrain.terrainLayers.Length; i++)
-            {
-                terrain.SetDetailLayer(0, 0, i, terrainData.details[i]);
             }
         }
 
@@ -187,6 +158,38 @@ namespace VM.TerrainTools
         private void _ChangeGhostColor (Color color)
         {
             this._terrainChangeArea.GetComponent<MeshRenderer>().material.color = color;
+        }
+
+        public override string GetSaveData()
+        {
+            TerrainSaveData saveData = new TerrainSaveData();
+            saveData.details = new Dictionary<int, int[,]>();
+
+            TerrainData terrainData = this._terrain.terrainData;
+
+            saveData.heights = terrainData.GetHeights(0, 0, terrainData.heightmapResolution, terrainData.heightmapResolution);
+            saveData.colors = terrainData.GetAlphamaps(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
+
+            for (int i = 0; i < terrainData.detailPrototypes.Length; i++)
+            {
+                saveData.details.Add(i, terrainData.GetDetailLayer(0, 0, terrainData.detailWidth, terrainData.detailHeight, i));
+            }
+
+            return JsonConvert.SerializeObject(saveData);
+        }
+
+        public override void LoadSaveData(string data)
+        {
+            TerrainSaveData terrainData = JsonConvert.DeserializeObject<TerrainSaveData>(data);
+            TerrainData terrain = this._terrain.terrainData;
+
+            terrain.SetHeights(0, 0, terrainData.heights);
+            terrain.SetAlphamaps(0, 0, terrainData.colors);
+
+            for (int i = 0; i < terrainData.details.Count; i++)
+            {
+                terrain.SetDetailLayer(0, 0, i, terrainData.details[i]);
+            }
         }
     }
 }

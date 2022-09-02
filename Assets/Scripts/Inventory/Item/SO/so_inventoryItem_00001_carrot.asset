@@ -10,9 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ddf29698d31519149ba8168b1ca9155a, type: 3}
-  m_Name: so_inventoryItem_carrot
+  m_Name: so_inventoryItem_00001_carrot
   m_EditorClassIdentifier: 
+  _type: "\u0415\u0434\u0430"
+  _id: 1
   _name: "\u041C\u043E\u0440\u043A\u043E\u0432\u043A\u0430"
   _icon: {fileID: 0}
   _maxAmount: 15
-  _prefab: {fileID: 4340352457272546180, guid: db5e5b799c5f6e046b4e9703ac3ae719, type: 3}
+  _prefab: {fileID: 1617610025677353576, guid: db5e5b799c5f6e046b4e9703ac3ae719, type: 3}

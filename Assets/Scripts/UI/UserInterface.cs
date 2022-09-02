@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using VM.Inventory;
+using VM.SceneTools;
 using VM.UI.Inventory;
 using VM.UI.WindowInfo;
 
@@ -33,7 +34,7 @@ namespace VM.UI
         private void Awake()
         {
             Instance = this;
-
+            SceneController.inGameMenu = true;
             this._contextMenu.Hide();
         }
 

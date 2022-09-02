@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e39dab0d1e19d844bbd1b5faec7c37fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _managerType: {fileID: 11400000, guid: 8cb3065f810e0d54db5c19d430688f72, type: 2}
+  _managerType: {fileID: 0}
   _manager:
     _inventoryType: {fileID: 0}
     _onScene: {fileID: 0}

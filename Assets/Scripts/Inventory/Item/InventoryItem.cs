@@ -30,6 +30,7 @@ namespace VM.Inventory
             }
         }
         public InventoryManager Storage => _storage;
+        public GameObject OnScene => _onScene;
 
         public InventoryItem (SO_InventoryItem type, float amount, GameObject onScene = null)
         {
@@ -37,13 +38,9 @@ namespace VM.Inventory
             this._amount = amount;
             this._onScene = onScene;
 
-            if (InventoryItemsManager.Instance != null)
+            if (this._onScene != null)
             {
-                InventoryItemsManager.Instance.Items.Add(this);
-            }
-            else
-            {
-                InventoryItemsManager.OnInit.AddListener((items) => items.Add(this));
+                this._AddToCommonManager();
             }
 
             this.OnAmountChange.AddListener((float amount) => this._OnAmountChange());
@@ -91,25 +88,32 @@ namespace VM.Inventory
             if (this._onScene == null)
             {
                 this._onScene = MonoBehaviour.Instantiate(
-                    this._itemType.Prefab, 
+                    this._itemType.Prefab.gameObject, 
                     position, 
                     Quaternion.identity
                 );
 
                 this._storage = null;
                 this._onScene.GetComponent<InventoryItemObject>().SetManager(this);
+                this._onScene.transform.parent = InventoryItemsManager.Instance.Container;
+                this._AddToCommonManager();
             }
 
             // переместить объект на позицию спауна
             this._onScene.transform.position = position;
         }
 
-        public void RemoveFromScene()
+        public void RemoveFromScene(bool deleteFromCommonManager = true)
         {
             if (this._onScene != null)
             {
                 MonoBehaviour.Destroy(this._onScene);
                 this._onScene = null;
+
+                if (deleteFromCommonManager)
+                {
+                    this._RemoveFromCommonManager();
+                }
             }
         }
 
@@ -172,6 +176,30 @@ namespace VM.Inventory
                 this.RemoveFromScene();
                 InventoryItemsManager.Instance.Items.Remove(this);
                 this.OnDelete.Invoke();
+            }
+        }
+
+        private void _AddToCommonManager()
+        {
+            if (InventoryItemsManager.Instance != null)
+            {
+                InventoryItemsManager.Instance.Items.Add(this);
+            }
+            else
+            {
+                InventoryItemsManager.OnInit.AddListener((items) => items.Add(this));
+            }
+        }
+
+        private void _RemoveFromCommonManager ()
+        {
+            if (InventoryItemsManager.Instance != null)
+            {
+                InventoryItemsManager.Instance.Items.Remove(this);
+            }
+            else
+            {
+                InventoryItemsManager.OnInit.AddListener((items) => items.Remove(this));
             }
         }
     }

@@ -18,6 +18,7 @@ namespace VM.Inventory
 
         public SO_InventoryManager Type => _inventoryType;
         public Dictionary<int, InventoryItem> Inventory => this._inventory;
+        public GameObject OnScene => _onScene;
 
         public UnityEvent<Dictionary<int, InventoryItem>> OnInventoryChange = 
             new UnityEvent<Dictionary<int, InventoryItem>>();
@@ -140,11 +141,12 @@ namespace VM.Inventory
             if (this._onScene == null)
             {
                 this._onScene = MonoBehaviour.Instantiate(
-                    this._inventoryType.Prefab,
+                    this._inventoryType.Prefab.gameObject,
                     position,
                     Quaternion.identity
                 );
 
+                this._onScene.transform.parent = InventoryStoragesManager.Instance.Container;
                 this._onScene.GetComponent<InventoryManagerObject>().SetManager(this);
             }
 
@@ -155,9 +157,14 @@ namespace VM.Inventory
         public InventoryItem Get (int position)
         {
             InventoryItem item = this._inventory[position];
-            this._inventory[position] = null;
-            item.SetStorage(null);
-            this.OnInventoryChange.Invoke(this._inventory);
+
+            if (item != null)
+            {
+                this._inventory[position] = null;
+                item.SetStorage(null);
+                this.OnInventoryChange.Invoke(this._inventory);
+            }
+
             return item;
         }
 
@@ -220,6 +227,7 @@ namespace VM.Inventory
             if (this._onScene != null)
             {
                 MonoBehaviour.Destroy(this._onScene);
+                this._onScene = null;
             }
         }
 
@@ -227,6 +235,12 @@ namespace VM.Inventory
         {
             this.RemoveFromScene();
             InventoryStoragesManager.Instance.Storages.Remove(this);
+        }
+
+        public void FullReset ()
+        {
+            this._inventory = new Dictionary<int, InventoryItem>();
+            this.OnInventoryChange.RemoveAllListeners();
         }
 
         private void _OpenWindow()
