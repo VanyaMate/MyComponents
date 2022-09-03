@@ -14,8 +14,7 @@ namespace VM.Inventory
         public static UnityEvent<List<InventoryItem>> OnInit = new UnityEvent<List<InventoryItem>>();
 
         [SerializeField] private Transform _container;
-
-        private List<InventoryItem> _items = new List<InventoryItem>();
+        [SerializeField] private List<InventoryItem> _items = new List<InventoryItem>();
 
         public List<InventoryItem> Items => _items;
         public Transform Container => _container;
@@ -33,6 +32,7 @@ namespace VM.Inventory
                 item.RemoveFromScene(deleteFromCommonManager: false);
             });
 
+            this._items.RemoveAll(x => true);
             this._items = new List<InventoryItem>();
         }
 
@@ -69,8 +69,15 @@ namespace VM.Inventory
             items.ForEach((item) =>
             {
                 SO_InventoryItem itemType = InventoryListOfTypes.Instance.GetItemById(item.itemId);
-                InventoryItem itemManager = new InventoryItem(itemType, item.amount);
-                itemManager.AddOnScene(new UnityVector3(item.position).vector);
+
+                InventoryItemObject onScene = Instantiate(
+                    itemType.Prefab,
+                    Vector3.zero,
+                    Quaternion.identity
+                );
+
+                onScene.SetItemType(itemType, item.amount);
+                onScene.Manager.AddOnScene(new UnityVector3(item.position).vector);
             });
         }
     }

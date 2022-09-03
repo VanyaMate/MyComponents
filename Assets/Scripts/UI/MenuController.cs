@@ -57,6 +57,7 @@ namespace VM.UI
             // Geniral Menu
             this._startNewGameButton.onClick.AddListener(this._StartNewGame);
             this._loadSaveMenuButton.onClick.AddListener(this._OpenLoadMenu);
+            this._exitGameButton.onClick.AddListener(this._ExitGame);
 
             // Load Menu
             this._loadSaveButton.onClick.AddListener(this._LoadSaveHandler);
@@ -169,16 +170,29 @@ namespace VM.UI
         {
             SceneController.loadFile = "null";
             SceneController.inGameMenu = false;
-            SceneManager.LoadScene("Menu");
+            SceneManager.LoadScene("Main");
         }
 
         private void _LoadSaveHandler ()
         {
             if (SceneController.loadFile != "null")
             {
-                SceneController.inGameMenu = true;
-                SceneManager.LoadScene("Game");
+                if (SceneController.inGameMenu == true)
+                {
+                    SaveManager.Instance.Load(SceneController.loadFile);
+                    this.Hide();
+                }
+                else
+                {
+                    SceneController.inGameMenu = true;
+                    SceneManager.LoadScene("Game");
+                }
             }
+        }
+
+        private void _ExitGame ()
+        {
+            Application.Quit();
         }
 
 

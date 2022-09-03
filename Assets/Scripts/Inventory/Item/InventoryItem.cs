@@ -11,11 +11,11 @@ namespace VM.Inventory
     [Serializable]
     public class InventoryItem
     {
-        [SerializeField] private SO_InventoryItem _itemType;
-        [SerializeField] private GameObject _onScene;
+        [SerializeField] protected SO_InventoryItem _itemType;
+        [SerializeField] protected GameObject _onScene;
         [SerializeField] private float _amount;
 
-        private InventoryManager _storage;
+        protected InventoryManager _storage;
 
         public UnityEvent<float> OnAmountChange = new UnityEvent<float>();
         public UnityEvent OnDelete = new UnityEvent();
@@ -95,11 +95,11 @@ namespace VM.Inventory
 
                 this._storage = null;
                 this._onScene.GetComponent<InventoryItemObject>().SetManager(this);
-                this._onScene.transform.parent = InventoryItemsManager.Instance.Container;
                 this._AddToCommonManager();
             }
 
             // переместить объект на позицию спауна
+            this._onScene.transform.parent = InventoryItemsManager.Instance.Container;
             this._onScene.transform.position = position;
         }
 
@@ -117,7 +117,7 @@ namespace VM.Inventory
             }
         }
 
-        public void LeftClickGameObjectHandler ()
+        public virtual void LeftClickGameObjectHandler ()
         {
             if (InventoryPlayerPockets.Instance.Manager.Add(this))
             {
@@ -125,7 +125,7 @@ namespace VM.Inventory
             }
         }
 
-        public void RightClickGameObjectHandler ()
+        public virtual void RightClickGameObjectHandler ()
         {
             Dictionary<string, UnityAction> context = new Dictionary<string, UnityAction>();
 
@@ -140,12 +140,12 @@ namespace VM.Inventory
             UserInterface.Instance.ContextMenu.Show(context);
         }
 
-        public void LeftClickUIHandler (InventoryManager manager)
+        public virtual void LeftClickUIHandler (InventoryManager manager)
         {
             Debug.Log("Used");
         }
 
-        public void RightClickUIHandler (InventoryManager manager)
+        public virtual void RightClickUIHandler (InventoryManager manager)
         {
             Dictionary<string, UnityAction> context = new Dictionary<string, UnityAction>();
 
@@ -154,7 +154,7 @@ namespace VM.Inventory
             UserInterface.Instance.ContextMenu.Show(context);
         }
 
-        private void _OpenInfo ()
+        protected virtual void _OpenInfo ()
         {
             Window window = UserInterface.Instance.OpenWindow(this._itemType.Name);
             WindowItemInfo itemInfo = MonoBehaviour.Instantiate(
@@ -163,17 +163,16 @@ namespace VM.Inventory
             );
 
             itemInfo.SetData(this._itemType.Icon, this._itemType.Name, new List<ItemPointData>()
-                {
-                    new ItemPointData() { Name = "Количество", Value = this._amount.ToString() },
-                    new ItemPointData() { Name = "Максимальное", Value = this._itemType.MaxAmount.ToString() },
-                });
+            {
+                new ItemPointData() { Name = "Количество", Value = this._amount.ToString() },
+                new ItemPointData() { Name = "Максимальное", Value = this._itemType.MaxAmount.ToString() },
+            });
         }
 
         private void _OnAmountChange ()
         {
             if (this._amount == 0)
             {
-                this.RemoveFromScene();
                 InventoryItemsManager.Instance.Items.Remove(this);
                 this.OnDelete.Invoke();
             }

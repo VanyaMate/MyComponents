@@ -12,7 +12,6 @@ namespace VM.TerrainTools
 
         [SerializeField] private Terrain _terrain;
         [SerializeField] private TerrainCollider _collider;
-        [SerializeField] private NavMeshSurface _navMesh;
 
         private float _width;
         private float _length;
@@ -41,18 +40,19 @@ namespace VM.TerrainTools
             int pointZ = (int)Mathf.Round(points.z - _radius / 2);
 
             float[,] heights = this._terrain.terrainData.GetHeights(pointX, pointZ, _radius, _radius);
+            int center = _radius / 2;
 
             for (int i = 0; i < _radius; i++)
             {
                 for (int j = 0; j < _radius; j++)
                 {
-                    heights[i, j] = opacity;
+                    float distance = Vector2.Distance(new Vector2(i, j), new Vector2(center, center));
+                    heights[i, j] = opacity - opacity * (distance > center ? 1 : distance / center);
                 }
             }
 
             this._terrain.terrainData.SetHeights(pointX, pointZ, heights);
             this._collider.terrainData.SetHeights(pointX, pointZ, heights);
-            this._navMesh.UpdateNavMesh(this._navMesh.navMeshData);
             this._FixRigidbodyKinematic(position, _radius);
         }
 
@@ -64,18 +64,19 @@ namespace VM.TerrainTools
             int pointZ = (int)Mathf.Round(points.z - _radius / 2);
 
             float[,] heights = this._terrain.terrainData.GetHeights(pointX, pointZ, _radius, _radius);
+            int center = _radius / 2;
 
             for (int i = 0; i < _radius; i++)
             {
                 for (int j = 0; j < _radius; j++)
                 {
-                    heights[i, j] += amount;
+                    float distance = Vector2.Distance(new Vector2(i, j), new Vector2(center, center));
+                    heights[i, j] += amount - amount * (distance > center ? 1 : distance / center);
                 }
             }
 
             this._terrain.terrainData.SetHeights(pointX, pointZ, heights);
             this._collider.terrainData.SetHeights(pointX, pointZ, heights);
-            this._navMesh.UpdateNavMesh(this._navMesh.navMeshData);
             this._FixRigidbodyKinematic(position, _radius);
         }
 
@@ -87,12 +88,14 @@ namespace VM.TerrainTools
             int dpZ = (int)(detailsPoints.z - _radius / 2);
 
             int[,] details = this._terrain.terrainData.GetDetailLayer(dpX, dpZ, _radius, _radius, layer);
+            int center = _radius / 2;
 
             for (int i = 0; i < _radius; i++)
             {
                 for (int j = 0; j < _radius; j++)
                 {
-                    details[i, j] = opacity;
+                    float distance = Vector2.Distance(new Vector2(i, j), new Vector2(center, center));
+                    details[i, j] = distance > center ? 0 : opacity;
                 }
             }
 
@@ -107,17 +110,20 @@ namespace VM.TerrainTools
             int colorZ = (int)Mathf.Round(colorPoint.z - _radius / 2);
 
             float[,,] colors = this._terrain.terrainData.GetAlphamaps(colorX, colorZ, _radius, _radius);
+            int center = _radius / 2;
 
             for (int i = 0; i < _radius; i++)
             {
                 for (int j = 0; j < _radius; j++)
                 {
+                    float distance = Vector2.Distance(new Vector2(i, j), new Vector2(center, center));
+
                     for (int l = 0; l < colors.GetLength(2); l++)
                     {
-                        colors[i, j, l] = 1 - opacity / (colors.GetLength(2) - 1);
+                        colors[i, j, l] = distance > center ? colors[i, j, l] : 1 - opacity / (colors.GetLength(2) - 1);
                     }
 
-                    colors[i, j, layer] = opacity;
+                    colors[i, j, layer] = distance > center ? colors[i, j, layer] : opacity;
                 }
             }
 
@@ -208,7 +214,6 @@ namespace VM.TerrainTools
             }
 
             this._terrain.terrainData.SetHeights(0, 0, heights);
-            this._navMesh.UpdateNavMesh(this._navMesh.navMeshData);
         }
 
         private void _ResetTerrainDetails()
@@ -225,7 +230,7 @@ namespace VM.TerrainTools
             {
                 for (int j = 0; j < details.GetLength(1); j++)
                 {
-                    details[i, j] = Random.Range(0, 1000) > 990 ? 1 : 0;
+                    details[i, j] = Random.Range(0, 1000) > 800 ? 1 : 0;
                 }
             }
 

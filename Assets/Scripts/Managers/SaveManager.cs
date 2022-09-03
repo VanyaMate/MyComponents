@@ -11,6 +11,7 @@ using VM.SceneTools;
 using VM.Managers;
 using VM.Managers.Save;
 using VM.UI;
+using VM.Building;
 
 namespace VM.Save
 {
@@ -36,6 +37,12 @@ namespace VM.Save
         {
             this.vector = new Vector3(serVector.x, serVector.y, serVector.z);
         }
+    }
+
+    public class InventoryBuildingSaveData
+    {
+        public SerVector position;
+        public int itemId;
     }
 
     public class InventoryItemSaveData
@@ -97,6 +104,7 @@ namespace VM.Save
             data.Add("player", this._SaveData(PlayerManager.Instance));
             data.Add("storages", this._SaveData(InventoryStoragesManager.Instance));
             data.Add("items", this._SaveData(InventoryItemsManager.Instance));
+            data.Add("buildings", this._SaveData(BuildingManager.instance));
 
             string fileName = DateTime.Now.ToString("MM_dd_yyyy-HH_mm_ss");
             string saveDir = DirectoryManager.instance.saveDir;
@@ -134,11 +142,13 @@ namespace VM.Save
 
                 InventoryStoragesManager.Instance.FullReset();
                 InventoryItemsManager.Instance.FullReset();
+                BuildingManager.instance.FullReset();
 
                 this._LoadData(TerrainManager.Instance, data["terrain"]);
                 this._LoadData(PlayerManager.Instance, data["player"]);
                 this._LoadData(InventoryStoragesManager.Instance, data["storages"]);
                 this._LoadData(InventoryItemsManager.Instance, data["items"]);
+                this._LoadData(BuildingManager.instance, data["buildings"]);
             }
         }
 

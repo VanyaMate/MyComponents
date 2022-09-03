@@ -19,55 +19,75 @@ namespace VM.TerrainTools
         [SerializeField] private Terrain _terrain;
         [SerializeField] private Transform _terrainChangeArea;
 
+        [Header("Props")]
+        [SerializeField] private bool _enabled;
+
         private Vector3 _startPosition;
 
         private void Awake()
         {
             Instance = this;
+            this._enabled = false;
         }
 
         private void Update()
         {
-            if (Utils.MouseWorldPosition.transform == this._terrain.transform)
+            if (this._enabled && Utils.MouseOverGameObject)
             {
-                int radius = 2;
-                this._ShowGhost(radius);
+                if (Utils.MouseWorldPosition.transform == this._terrain.transform)
+                {
+                    int radius = 2;
+                    this._ShowGhost(radius);
 
-                if (this._GetGroundInfoAboutArea(Utils.MouseWorldPosition.point, 1f) == 1)
-                {
-                    this._ChangeGhostColor(new Color(0, 1, 0, .3f));
-                }
-                else
-                {
-                    this._ChangeGhostColor(new Color(1, 0, 0, .3f));
-                }
+                    if (this._GetGroundInfoAboutArea(Utils.MouseWorldPosition.point, 1f) == 1)
+                    {
+                        this._ChangeGhostColor(new Color(0, 1, 0, .3f));
+                    }
+                    else
+                    {
+                        this._ChangeGhostColor(new Color(1, 0, 0, .3f));
+                    }
 
-                if (Input.GetMouseButton(0))
-                {
-                    this._redactor.ChangeHeights(Utils.MouseWorldPosition.point, radius, .001f);
-                    this._redactor.SetDetails(Utils.MouseWorldPosition.point, radius * 2, 0, 0);
-                    this._redactor.SetColor(Utils.MouseWorldPosition.point, radius + .3f, 1, 1);
-                }
-                else if (Input.GetMouseButton(1))
-                {
-                    this._redactor.ChangeHeights(Utils.MouseWorldPosition.point, radius, -.001f);
-                    this._redactor.SetDetails(Utils.MouseWorldPosition.point, radius * 2, 0, 0);
-                    this._redactor.SetColor(Utils.MouseWorldPosition.point, radius + .3f, 1, 0);
-                }
-                /*else if (Input.GetMouseButtonDown(1))
-                {
-                    this._startPosition = Utils.MouseWorldPosition.point;
-                }
-                else if (Input.GetMouseButtonUp(1))
-                {
-                    this.GetHeightsInfoAboutArea(this._startPosition, Utils.MouseWorldPosition.point);
-                }
+                    if (Input.GetMouseButton(0))
+                    {
+                        this._redactor.ChangeHeights(Utils.MouseWorldPosition.point, radius, .001f);
+                        this._redactor.SetDetails(Utils.MouseWorldPosition.point, radius * 2, 0, 0);
+                        this._redactor.SetColor(Utils.MouseWorldPosition.point, radius + .3f, 1, 1);
+                    }
+                    else if (Input.GetMouseButton(1))
+                    {
+                        this._redactor.ChangeHeights(Utils.MouseWorldPosition.point, radius, -.001f);
+                        this._redactor.SetDetails(Utils.MouseWorldPosition.point, radius * 2, 0, 0);
+                        this._redactor.SetColor(Utils.MouseWorldPosition.point, radius + .3f, 1, 0);
+                    }
 
-                if (Input.GetMouseButtonDown(1))
-                {
-                    this.GetGroundInfoAboutArea(Utils.MouseWorldPosition.point, 1f);
-                }*/
+                    /*else if (Input.GetMouseButtonDown(1))
+                    {
+                        this._startPosition = Utils.MouseWorldPosition.point;
+                    }
+                    else if (Input.GetMouseButtonUp(1))
+                    {
+                        this.GetHeightsInfoAboutArea(this._startPosition, Utils.MouseWorldPosition.point);
+                    }
+
+                    if (Input.GetMouseButtonDown(1))
+                    {
+                        this.GetGroundInfoAboutArea(Utils.MouseWorldPosition.point, 1f);
+                    }*/
+                }
             }
+        }
+
+        public void Enable ()
+        {
+            this._enabled = true;
+            this._HideGhost();
+        }
+
+        public void Disable ()
+        {
+            this._enabled = false;
+            this._HideGhost();
         }
 
         private int _GetGroundInfoAboutArea (Vector3 position, float radius)
@@ -75,6 +95,8 @@ namespace VM.TerrainTools
             float[,,] colors = this._redactor.GetColorsFrom(position, radius);
             int color = -1;
             bool equals = true;
+            int _radius = colors.GetLength(0);
+            int center = _radius / 2;
 
             for (int i = 0; i < colors.GetLength(0); i++)
             {
@@ -82,6 +104,10 @@ namespace VM.TerrainTools
                 {
                     for (int j = 0; j < colors.GetLength(1); j++)
                     {
+                        float distance = Vector2.Distance(new Vector2(i, j), new Vector2(center, center));
+
+                        if (distance > center) continue;
+
                         if (equals)
                         {
                             for (int l = 0; l < colors.GetLength(2); l++)

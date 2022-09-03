@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using VM.Inventory.Items;
 using VM.UI;
 using VM.UI.Inventory;
 
@@ -168,9 +169,9 @@ namespace VM.Inventory
             return item;
         }
 
-        public InventoryItem Get (InventoryItem item)
+        public T Get<T> (InventoryItem item, float amount = -1) where T : InventoryItem
         {
-            InventoryItem _item = null;
+            T _item = default(T);
             int position = -1;
 
             for (int i = 0; i < this._inventory.Count; i++)
@@ -178,22 +179,52 @@ namespace VM.Inventory
                 if (this._inventory[i] == item)
                 {
                     position = i;
-                    _item = item;
                     break;
                 }
             }
 
-            if (_item != null)
+            if (position != -1)
             {
-                this._inventory[position] = null;
+                if (amount != -1)
+                {
+                    if (this._inventory[position].Get(amount))
+                    {
+                        object[] props = new object[3];
+                        props[0] = this._inventory[position].Type;
+                        props[1] = amount;
+                        _item = (T)Activator.CreateInstance(typeof(T), props);
+                    }
+                }
+                else
+                {
+                    _item = (T)this._inventory[position];
+                    this._inventory[position] = null;
+                }
+
                 this.OnInventoryChange.Invoke(this._inventory);
-                _item.SetStorage(null);
                 return _item;
             }
             else
             {
                 return null;
             }
+        }
+
+        public InventoryItem Get (int position, float amount)
+        {
+            InventoryItem _item = null;
+            InventoryItem item = this._inventory[position];
+
+            if (item != null && item.Amount >= amount)
+            {
+                if (this._inventory[position].Get(amount))
+                {
+                    _item = new InventoryItem(item.Type, amount);
+                    this.OnInventoryChange.Invoke(this._inventory);
+                }
+            }
+
+            return _item;
         }
 
         public void LeftClickGameObjectHandler ()

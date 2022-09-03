@@ -151,14 +151,17 @@ namespace VM.UI.Inventory
         
         private void _SetAmount (float amount)
         {
-            if (amount > 0)
+            if (this._item != null)
             {
-                this._amount.text = amount.ToString();
-            }
-            else
-            {
-                this._item.OnAmountChange.RemoveListener(this._onChangeAction);
-                this.ResetData();
+                if (amount > 0)
+                {
+                    this._amount.text = amount.ToString();
+                }
+                else
+                {
+                    this._item.OnAmountChange.RemoveListener(this._onChangeAction);
+                    this.ResetData();
+                }
             }
         }
 
@@ -169,6 +172,7 @@ namespace VM.UI.Inventory
             if (itemUI != null && itemUI != this && itemUI != this._ghost)
             {
                 InventoryItem item = this._storage.Get(this._position);
+                
                 if (itemUI.Storage.AddToPosition(itemUI.Position, item))
                 {
                     Debug.Log("Added");
@@ -182,7 +186,7 @@ namespace VM.UI.Inventory
                         {
                             if (invItem.MergeWith(item, out float amount))
                             {
-                                this._storage.Get(item);
+                                this._storage.Get<InventoryItem>(item);
                             }
                             else
                             {
@@ -191,11 +195,18 @@ namespace VM.UI.Inventory
                         }
                         else
                         {
-                            InventoryItem itemFrom = this._storage.Get(item);
-                            InventoryItem itemTo = itemUI.Storage.Get(itemUI.Item);
+                            // Swap
+                            Debug.Log("Swap");
+                            InventoryItem itemFrom = this._storage.Get<InventoryItem>(item);
+                            InventoryItem itemTo = itemUI.Storage.Get<InventoryItem>(itemUI.Item);
 
-                            itemUI.Storage.AddToPosition(this._position, itemFrom);
-                            this._storage.AddToPosition(itemUI.Position, itemTo);
+                            Debug.Log("Item: " + item);
+                            Debug.Log("InvItem: " + invItem);
+                            Debug.Log("ItemFrom: " + itemFrom);
+                            Debug.Log("ItemTo: " + itemTo);
+
+                            itemUI.Storage.AddToPosition(itemUI.Position, item);
+                            this._storage.AddToPosition(this.Position, itemTo);
                         }
                     }
                     else
@@ -210,7 +221,7 @@ namespace VM.UI.Inventory
         {
             if (hit.transform)
             {
-                InventoryItem item = this._storage.Get(this._item);
+                InventoryItem item = this._storage.Get<InventoryItem>(this._item);
                 
                 if (hit.transform.TryGetComponent<InventoryManagerObject>(out InventoryManagerObject manager))
                 {
@@ -229,6 +240,5 @@ namespace VM.UI.Inventory
                 Debug.Log("EmptyZone");
             }
         }
-
     }
 }

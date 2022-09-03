@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using VM.UI;
+using VM.Inventory.Items;
 
 namespace VM.Inventory
 {
@@ -20,14 +21,38 @@ namespace VM.Inventory
 
         private void Awake()
         {
-            if (this._itemType != null)
+            this.SetItemType(this._itemType, this._amount);
+        }
+
+        public void SetItemType (SO_InventoryItem itemType, float amount)
+        {
+            if (itemType != null)
             {
-                this._manager = new InventoryItem(this._itemType, this._amount, gameObject);
+                this._itemType = itemType;
+                this._amount = amount;
+
+                switch (this._itemType.Type)
+                {
+                    case "Еда":
+                        this._manager = new InventoryItem(this._itemType, this._amount, gameObject);
+                        break;
+                    case "Лопата":
+                        this._manager = new InventoryItemShovel(this._itemType, this._amount, gameObject);
+                        break;                    
+                    case "Постройка":
+                        this._manager = new InventoryItemBuilding((SO_InventoryBuildingItem)this._itemType, this._amount, gameObject);
+                        break;
+                    default:
+                        this._manager = new InventoryItem(this._itemType, this._amount, gameObject);
+                        break;
+                }
             }
         }
 
         public void SetManager (InventoryItem manager)
         {
+            this._itemType = manager.Type;
+            this._amount = manager.Amount;
             this._manager = manager;
         }
 

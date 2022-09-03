@@ -48,11 +48,8 @@ namespace VM.Inventory
         {
             List<InventoryManagerSaveData> data = new List<InventoryManagerSaveData>();
 
-            Debug.Log("InventoryStorageCount: " + this._storages.Count);
-
             this._storages.ForEach((storage) =>
             {
-                Debug.Log("stroage saved: " + storage.OnScene.name);
                 InventoryManagerSaveData saveData = new InventoryManagerSaveData()
                 {
                     managerId = storage.Type.Id,
